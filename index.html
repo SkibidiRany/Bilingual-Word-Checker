@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vocabulary Quiz (Any 2 Languages)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      min-height: 100vh;
+      padding: 0 10px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 2.1em;
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 2px #fff;
+    }
+    #direction-select-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 16px 0 8px 0;
+      gap: 10px;
+    }
+    #direction-select {
+      font-size: 1.1em;
+      padding: 6px 16px;
+      border-radius: 8px;
+      border: 1px solid #c4b5fd;
+      background: #f8fafc;
+      color: #553c9a;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .stats {
+      margin: 16px 0;
+      font-size: 1.1em;
+      background: #fff8ee;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px #0001;
+      padding: 14px 18px;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 7px 0 0 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
+      width: 0%;
+      transition: width 0.5s;
+    }
+    #quiz {
+      background: #fff6;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #0002;
+      padding: 28px 22px 36px 22px;
+      margin-top: 14px;
+    }
+    .word {
+      font-size: 2.1em;
+      margin: 18px 0 22px 0;
+      text-align: center;
+      color: #2a2a2a;
+      font-family: 'Baloo Bhaijaan 2', Arial, sans-serif;
+      letter-spacing: 2px;
+      background: #fff3;
+      border-radius: 9px;
+      padding: 7px 0;
+      box-shadow: 0 1px 8px #0001;
+    }
+    .result {
+      margin: 20px 0 0 0;
+      font-weight: bold;
+      font-size: 1.3em;
+      text-align: center;
+      min-height: 1.6em;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .result.show {
+      opacity: 1;
+    }
+    input[type="text"] {
+      font-size: 1.3em;
+      padding: 10px;
+      width: 95%;
+      border-radius: 8px;
+      border: 1px solid #d5aaff;
+      margin-bottom: 12px;
+      box-shadow: 0 0 8px #d5aaff33;
+      transition: border 0.3s;
+    }
+    input[type="text"]:focus {
+      border: 2px solid #9f7aea;
+      outline: none;
+      background: #f9f6ff;
+    }
+    button {
+      font-size: 1.1em;
+      padding: 8px 20px;
+      margin-top: 8px;
+      margin-right: 10px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
+      box-shadow: 0 2px 6px #0001;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #fcb69f 0%, #ffecd2 100%);
+      transform: scale(1.07);
+    }
+    #loading {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 1.2em;
+      color: #8b5cf6;
+    }
+    .encouragement {
+      font-size: 1.1em;
+      margin-top: 8px;
+      color: #38a169;
+      text-align: center;
+      min-height: 1.4em;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .encouragement.show {
+      opacity: 1;
+    }
+    #history-table-container {
+      margin: 36px 0 18px 0;
+      background: #fff9;
+      border-radius: 10px;
+      box-shadow: 0 2px 14px #0001;
+      padding: 12px;
+    }
+    #history-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.98em;
+      margin-top: 6px;
+    }
+    #history-table th, #history-table td {
+      border: 1px solid #eee;
+      padding: 7px 9px;
+      text-align: left;
+    }
+    #history-table th {
+      background: #f3e8ff;
+      color: #553c9a;
+      font-weight: bold;
+    }
+    #history-table tr.correct {
+      background: #e6fffa;
+    }
+    #history-table tr.incorrect {
+      background: #fff5f5;
+      color: #e53e3e;
+    }
+    #history-table td.result-cell {
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 Two-Language Vocabulary Quiz 🌍</h1>
+  <div id="direction-select-container">
+    <label for="direction-select" id="direction-label"></label>
+    <select id="direction-select"></select>
+  </div>
+  <div class="stats" id="stats">
+    <span id="scoreboard">Correct: 0</span>
+    <span id="failboard">Incorrect: 0</span>
+    <span id="totalboard">Total: 0</span>
+  </div>
+  <div class="progress-bar"><div class="progress-bar-fill" id="progress-bar-fill"></div></div>
+  <div id="quiz" style="display:none;">
+    <div class="word" id="from-word"></div>
+    <input type="text" id="user-answer" autocomplete="off" placeholder="Type the answer" />
+    <div>
+      <button onclick="checkAnswer()">✅ Check</button>
+      <button onclick="nextWord()">➡️ Next</button>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="encouragement" id="encouragement"></div>
+  </div>
+  <div id="loading">Loading words...</div>
+  <div id="history-table-container">
+    <h3 style="margin: 0 0 8px 0; color:#553c9a;" id="history-header">Word History</h3>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th id="history-from-th">From</th>
+          <th>Your Answer</th>
+          <th id="history-to-th">To</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody id="history-table-body">
+        <!-- History rows go here -->
+      </tbody>
+    </table>
+  </div>
+  <script>
+    let words = [];
+    let current = 0;
+    let stats = {
+      correct: 0,
+      incorrect: 0,
+      total: 0,
+      attemptedCurrent: false
+    };
+    let history = [];
+    let fromCol = "From", toCol = "To"; // Will be set from CSV header
+    let allCols = []; // will be filled from CSV header
+    let direction = 0; // 0: From->To, 1: To->From
+    const encouragementMessages = [
+      "🌈 Great job!", "🚀 Awesome!", "👏 Well done!", "🎉 You rock!", "😃 Keep it up!", 
+      "🌟 Fantastic!", "👍 Super!", "🥳 Brilliant!", "💡 Smart move!", "🏆 Winner!"
+    ];
+
+    function updateStats() {
+      document.getElementById('scoreboard').textContent = `✅ Correct: ${stats.correct}`;
+      document.getElementById('failboard').textContent = `❌ Incorrect: ${stats.incorrect}`;
+      document.getElementById('totalboard').textContent = `📊 Total: ${stats.total}`;
+      const percent = words.length ? Math.round((stats.total / words.length) * 100) : 0;
+      document.getElementById('progress-bar-fill').style.width = `${percent}%`;
+    }
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+    function showWord() {
+      document.getElementById('from-word').textContent = words[current][fromCol];
+      document.getElementById('user-answer').value = '';
+      document.getElementById('result').textContent = '';
+      document.getElementById('result').classList.remove('show');
+      document.getElementById('encouragement').textContent = '';
+      document.getElementById('encouragement').classList.remove('show');
+      document.getElementById('user-answer').focus();
+      stats.attemptedCurrent = false;
+    }
+    function checkAnswer() {
+      if (stats.attemptedCurrent) return;
+      const userInput = document.getElementById('user-answer').value.trim();
+      const userInputLower = userInput.toLowerCase();
+      const correctAnswer = words[current][toCol].trim();
+      const correctAnswerLower = correctAnswer.toLowerCase();
+      stats.total++;
+      let result, rowClass;
+      if (userInputLower === correctAnswerLower) {
+        stats.correct++;
+        document.getElementById('result').textContent = "✅ Correct!";
+        document.getElementById('result').style.color = "#38a169";
+        document.getElementById('encouragement').textContent =
+          encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+        document.getElementById('encouragement').classList.add('show');
+        result = "✅";
+        rowClass = "correct";
+      } else {
+        stats.incorrect++;
+        document.getElementById('result').textContent = `❌ Incorrect. Correct: "${words[current][toCol]}"`;
+        document.getElementById('result').style.color = "#e53e3e";
+        document.getElementById('encouragement').textContent = '';
+        document.getElementById('encouragement').classList.remove('show');
+        result = "❌";
+        rowClass = "incorrect";
+      }
+      document.getElementById('result').classList.add('show');
+      stats.attemptedCurrent = true;
+      updateStats();
+      addHistory(words[current][fromCol], userInput, words[current][toCol], result, rowClass);
+    }
+    function nextWord() {
+      current = (current + 1) % words.length;
+      showWord();
+    }
+    function addHistory(fromWord, userAnswer, toWord, result, rowClass) {
+      history.unshift({fromWord, userAnswer, toWord, result, rowClass});
+      renderHistory();
+    }
+    function renderHistory() {
+      const tbody = document.getElementById('history-table-body');
+      tbody.innerHTML = '';
+      history.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = item.rowClass;
+        tr.innerHTML = `
+          <td>${history.length - idx}</td>
+          <td>${item.fromWord}</td>
+          <td>${item.userAnswer}</td>
+          <td>${item.toWord}</td>
+          <td class="result-cell">${item.result}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    function resetStatsAndHistory() {
+      stats = { correct: 0, incorrect: 0, total: 0, attemptedCurrent: false };
+      history = [];
+      updateStats();
+      renderHistory();
+    }
+    function parseCSV(csv) {
+      const lines = csv.trim().split('\n');
+      const header = lines[0].split(',').map(h => h.trim());
+      allCols = header;
+      // Default direction
+      fromCol = header[0];
+      toCol = header[1];
+      const result = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        let obj = {};
+        header.forEach((h, idx) => obj[h] = (cols[idx] || "").trim());
+        result.push(obj);
+      }
+      return result;
+    }
+    function setupDirectionSelector() {
+      const select = document.getElementById('direction-select');
+      select.innerHTML = '';
+      // Add both directions as options
+      const option1 = document.createElement('option');
+      option1.value = "0";
+      option1.textContent = `${allCols[0]} ➡️ ${allCols[1]}`;
+      const option2 = document.createElement('option');
+      option2.value = "1";
+      option2.textContent = `${allCols[1]} ➡️ ${allCols[0]}`;
+      select.appendChild(option1);
+      select.appendChild(option2);
+      // Set label
+      document.getElementById('direction-label').textContent = "Quiz Direction:";
+      // Update table headers
+      updateTableHeaders();
+      select.onchange = function() {
+        direction = parseInt(this.value, 10);
+        if (direction === 0) {
+          fromCol = allCols[0];
+          toCol = allCols[1];
+        } else {
+          fromCol = allCols[1];
+          toCol = allCols[0];
+        }
+        resetStatsAndHistory();
+        updateTableHeaders();
+        showWord();
+      };
+    }
+    function updateTableHeaders() {
+      document.getElementById('history-from-th').textContent = fromCol;
+      document.getElementById('history-to-th').textContent = toCol;
+      document.getElementById('history-header').textContent = `Word History (${fromCol} ➡️ ${toCol})`;
+    }
+    fetch('words.csv')
+      .then(response => response.text())
+      .then(data => {
+        words = parseCSV(data);
+        shuffle(words);
+        setupDirectionSelector();
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('quiz').style.display = '';
+        showWord();
+        updateStats();
+        renderHistory();
+      })
+      .catch(err => {
+        document.getElementById('loading').textContent = 'Failed to load words.csv';
+      });
+
+    // Keyboard navigation: Enter = Check, then Enter again = Next (if already checked)
+    document.addEventListener('DOMContentLoaded', function() {
+      const input = document.getElementById('user-answer');
+      input.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          if (!stats.attemptedCurrent) {
+            checkAnswer();
+          } else {
+            nextWord();
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
