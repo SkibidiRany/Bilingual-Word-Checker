@@ -39,18 +39,9 @@
       cursor: pointer;
     }
     .stats {
-      margin: 16px 0;
-      font-size: 1.1em;
-      background: #fff8ee;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px #0001;
-      padding: 14px 18px;
-      color: #555;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: bold;
-      letter-spacing: 1px;
     }
     .progress-bar {
       width: 100%;
@@ -191,9 +182,10 @@
     <select id="direction-select"></select>
   </div>
   <div class="stats" id="stats">
-    <span id="scoreboard">Correct: 0</span>
-    <span id="failboard">Incorrect: 0</span>
-    <span id="totalboard">Total: 0</span>
+    <span id="scoreboard">✅ Correct: 0</span>
+    <span id="failboard">❌ Incorrect: 0</span>
+    <span id="totalboard">📊 Solved: 0</span>
+    <span id="wordcount">🧠 Words: 0</span>
   </div>
   <div class="progress-bar"><div class="progress-bar-fill" id="progress-bar-fill"></div></div>
   <div id="quiz" style="display:none;">
@@ -202,6 +194,7 @@
     <div>
       <button onclick="checkAnswer()">✅ Check</button>
       <button onclick="nextWord()">➡️ Next</button>
+      <button onclick="restartQuiz()">🔄 Restart Quiz</button>
     </div>
     <div class="result" id="result"></div>
     <div class="encouragement" id="encouragement"></div>
@@ -227,6 +220,7 @@
   <script>
     let words = [];
     let current = 0;
+    let toRestart = false;
     let stats = {
       correct: 0,
       incorrect: 0,
@@ -243,18 +237,20 @@
     ];
 
     function updateStats() {
-      document.getElementById('scoreboard').textContent = `✅ Correct: ${stats.correct}`;
-      document.getElementById('failboard').textContent = `❌ Incorrect: ${stats.incorrect}`;
-      document.getElementById('totalboard').textContent = `📊 Total: ${stats.total}`;
-      const percent = words.length ? Math.round((stats.total / words.length) * 100) : 0;
-      document.getElementById('progress-bar-fill').style.width = `${percent}%`;
-    }
+    document.getElementById('scoreboard').textContent = `✅ Correct: ${stats.correct}`;
+    document.getElementById('failboard').textContent = `❌ Incorrect: ${stats.incorrect}`;
+    document.getElementById('totalboard').textContent = `📊 Solved: ${stats.total}`;
+    document.getElementById('wordcount').textContent = `🧠 Words: ${words.length}`; // New
+    const percent = words.length ? Math.round((stats.total / words.length) * 100) : 0;
+    document.getElementById('progress-bar-fill').style.width = `${percent}%`;
+    } 
+
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
       }
-    }
+    } 
     function showWord() {
       document.getElementById('from-word').textContent = words[current][fromCol];
       document.getElementById('user-answer').value = '';
@@ -296,16 +292,32 @@
       updateStats();
       addHistory(words[current][fromCol], userInput, words[current][toCol], result, rowClass);
     }
+    function finishedAll(){
+      document.getElementById('encouragement').textContent = '🎉 Congrats! You finished them all!';
+      document.getElementById('encouragement').classList.add('show');
+      toRestart = true;
+    }
+
     function nextWord() {
-      current = (current + 1) % words.length;
+      if (current === words.length - 1) {
+        finishedAll();
+        return;
+      }
+      current++;
       showWord();
     }
+
+
     function addHistory(fromWord, userAnswer, toWord, result, rowClass) {
       history.unshift({fromWord, userAnswer, toWord, result, rowClass});
       renderHistory();
     }
     function renderHistory() {
       const tbody = document.getElementById('history-table-body');
+      if (toRestart) {
+        history.length = 0; // Clear the history array
+        toRestart = false;  // Reset the flag (optional)
+      }
       tbody.innerHTML = '';
       history.forEach((item, idx) => {
         const tr = document.createElement('tr');
@@ -326,6 +338,16 @@
       updateStats();
       renderHistory();
     }
+    function restartQuiz() {
+      shuffle(words);
+      current = 0;
+      toRestart = false;
+      resetStatsAndHistory();
+      showWord();
+      document.getElementById('encouragement').textContent = '';
+      document.getElementById('encouragement').classList.remove('show');
+    }
+
     function parseCSV(csv) {
       const lines = csv.trim().split('\n');
       const header = lines[0].split(',').map(h => h.trim());
